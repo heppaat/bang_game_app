@@ -1,4 +1,12 @@
 [
-  { "name": "Pali", "age": 32 },
-  { "name": "Maca", "age": 33 }
+  {
+    "id": 0.8267589564452733,
+    "name": "alma",
+    "password": "$2b$10$VuLehrgarD7p/JL2/3k9s.PDMk1x2SbD2xFER.us/a6jLNWmBkkv."
+  },
+  {
+    "id": 0.07718684003108267,
+    "name": "korte",
+    "password": "$2b$10$cyGo.cWrK/ai/YrziW636.HBdLX5FAJmlyp/3krzd/L5WMkKuU6Vq"
+  }
 ]

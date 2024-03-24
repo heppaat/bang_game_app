@@ -17,8 +17,8 @@ export const load = async <Schema extends z.ZodTypeAny>(
 };
 
 export const save = async <Schema extends z.ZodTypeAny>(
-  data: unknown,
   filename: string,
+  data: unknown,
   schema: Schema
 ): Promise<{ success: boolean }> => {
   try {

@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-export const UserSchema = z.object({ id: z.number(), name: z.string() });
+export const UserSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  password: z.string(),
+});
 
 export const RoleSchema = z.object({
   name: z.union([

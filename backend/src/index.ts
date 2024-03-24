@@ -13,6 +13,7 @@ import {
 } from "./model";
 import { error } from "console";
 import { send } from "process";
+import { hash } from "./util/hash";
 
 const server = express();
 
@@ -20,9 +21,32 @@ server.use(cors());
 
 server.use(express.json());
 
+const SignupRequestSchema = z.object({
+  name: z.string().min(3),
+  password: z.string().min(3),
+});
+
 //name -> id
 server.post("/api/signup", async (req, res) => {
-  res.json();
+  const result = SignupRequestSchema.safeParse(req.body);
+  if (!result.success) return res.sendStatus(500);
+
+  const { name, password } = result.data;
+
+  const users = await load("users", UserSchema.array());
+  if (!users) return res.sendStatus(500);
+
+  const userExists = users.some((user) => user.name === name);
+  if (userExists) return res.sendStatus(409);
+
+  const id = Math.random();
+  const hashedPassword = await hash(password);
+  users.push({ id, name, password: hashedPassword });
+
+  const isCreated = await save("users", users, UserSchema.array());
+  if (!isCreated) return res.sendStatus(500);
+
+  return res.json({ id });
 });
 
 //name -> id

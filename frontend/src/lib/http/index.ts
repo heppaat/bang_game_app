@@ -13,15 +13,17 @@ type Response<Type> =
 
 type Method = "GET" | "POST" | "PATCH" | "DELETE";
 
+const baseUrl = "http://localhost:3001";
+
 export const safeFetch = async <Schema extends z.ZodTypeAny>(config: {
   method: Method;
-  url: string;
+  path: string;
   schema: Schema;
-  payload?: any;
+  payload?: unknown;
 }): Promise<Response<z.infer<typeof config.schema>>> => {
-  const { method, url, schema, payload } = config;
+  const { method, path, schema, payload } = config;
   try {
-    const response = await fetch(url, {
+    const response = await fetch(baseUrl + path, {
       method,
       headers: payload
         ? {
