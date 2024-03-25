@@ -14,6 +14,7 @@ import {
 import { error } from "console";
 import { send } from "process";
 import { hash } from "./util/hash";
+import { compare } from "bcrypt";
 
 const server = express();
 
@@ -22,6 +23,11 @@ server.use(cors());
 server.use(express.json());
 
 const SignupRequestSchema = z.object({
+  name: z.string().min(3),
+  password: z.string().min(3),
+});
+
+const LoginSchema = z.object({
   name: z.string().min(3),
   password: z.string().min(3),
 });
@@ -51,7 +57,21 @@ server.post("/api/signup", async (req, res) => {
 
 //name -> id
 server.post("/api/login", async (req, res) => {
-  res.json();
+  const result = LoginSchema.safeParse(req.body);
+  if (!result.success) return res.sendStatus(500);
+
+  const { name, password } = result.data;
+
+  const users = await load("users", UserSchema.array());
+  if (!users) return res.sendStatus(500);
+
+  const user = users.find((user) => user.name === name);
+  if (!user) return res.sendStatus(401);
+
+  const isCorrect = await compare(password, user.password);
+  if (!isCorrect) res.sendStatus(500);
+
+  return res.json({ success: true });
 });
 
 //groupSize, id -> 200/400/500

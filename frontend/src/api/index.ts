@@ -8,3 +8,11 @@ export const signup = (name: string, password: string) =>
     schema: z.object({ id: z.number() }),
     payload: { name, password },
   });
+
+export const login = (name: string, password: string) =>
+  safeFetch({
+    method: "POST",
+    path: "/api/login",
+    schema: z.object({ success: z.boolean() }),
+    payload: { name, password },
+  });

@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import { string } from "zod";
 
 /* const salt = bcrypt.genSaltSync(10);
 console.log(salt);
@@ -14,7 +15,11 @@ console.log(hashed3); //valami (ugyanaz)
  */
 
 export const hash = async (data: string) => {
-  const salt = bcrypt.genSaltSync(10);
+  const salt = await bcrypt.genSalt(10);
   const hashed = await bcrypt.hash(data, salt);
   return hashed;
+};
+
+export const compare = async (data: string, hash: string) => {
+  return await bcrypt.compare(data, hash);
 };
