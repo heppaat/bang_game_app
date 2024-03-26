@@ -15,8 +15,10 @@ import { error } from "console";
 import { send } from "process";
 import { hash } from "./util/hash";
 import { compare } from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const server = express();
+const serverPassword = "asdfljlawflkmkcmw";
 
 server.use(cors());
 
@@ -71,12 +73,51 @@ server.post("/api/login", async (req, res) => {
   const isCorrect = await compare(password, user.password);
   if (!isCorrect) res.sendStatus(500);
 
-  return res.json({ success: true });
+  /* const toHash = name + serverPassword;
+
+  const signature =
+    hash(toHash) + "||||" + name
+
+  return res.json({ signature }); */
+
+  //token ami 10second utan lejar
+  const token = jwt.sign({ name: user.name }, serverPassword, {
+    expiresIn: "10s",
+  });
+
+  res.json({ token });
+});
+
+const HeaderSchema = z.object({
+  auth: z.string(),
 });
 
 //groupSize, id -> 200/400/500
 server.post("/api/game", async (req, res) => {
-  res.json();
+  /* const signature = req.body.signature;
+
+  const name = signature.split("||||")[1];
+  const toHash = name + serverPassword;
+
+  const isCorrect = await compare(toHash, signature.split("||||")[0]);
+  if (!isCorrect) return res.sendStatus(401);
+ */
+
+  const result = HeaderSchema.safeParse(req.headers);
+  if (!result.success) return res.sendStatus(401);
+  const { auth } = result.data;
+
+  let tokenPayload;
+  try {
+    tokenPayload = jwt.verify(auth, serverPassword);
+  } catch (error) {
+    return res.sendStatus(401);
+  }
+
+  console.log(tokenPayload);
+  console.log("was here");
+
+  res.json({ msg: "ok" });
 });
 
 //id (user), id(game) -> 200/400/500

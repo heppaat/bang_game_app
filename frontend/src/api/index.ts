@@ -13,6 +13,14 @@ export const login = (name: string, password: string) =>
   safeFetch({
     method: "POST",
     path: "/api/login",
-    schema: z.object({ success: z.boolean() }),
+    schema: z.object({ token: z.string() }),
     payload: { name, password },
+  });
+
+export const createGame = () =>
+  safeFetch({
+    method: "POST",
+    path: "/api/game",
+    schema: z.object({ msg: z.string() }),
+    payload: {},
   });

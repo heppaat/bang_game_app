@@ -22,14 +22,16 @@ export const safeFetch = async <Schema extends z.ZodTypeAny>(config: {
   payload?: unknown;
 }): Promise<Response<z.infer<typeof config.schema>>> => {
   const { method, path, schema, payload } = config;
+  const token = localStorage.getItem("token");
   try {
     const response = await fetch(baseUrl + path, {
       method,
       headers: payload
         ? {
             "Content-Type": "application/JSON",
+            auth: token || "",
           }
-        : {},
+        : { auth: token || "" },
       body: payload ? JSON.stringify(payload) : undefined,
     });
 
