@@ -34,7 +34,45 @@ const LoginSchema = z.object({
   password: z.string().min(3),
 });
 
-//name -> id
+const HeaderSchema = z.object({
+  auth: z.string(),
+});
+
+const safeVerify = <Schema extends z.ZodTypeAny>(
+  token: string,
+  schema: Schema
+): z.infer<typeof schema> | null => {
+  try {
+    const tokenPayload = jwt.verify(token, serverPassword);
+    return schema.parse(tokenPayload);
+  } catch (error) {
+    return null;
+  }
+};
+
+server.use(async (req, res, next) => {
+  const result = HeaderSchema.safeParse(req.headers);
+  if (!result.success) return next();
+
+  const { auth } = result.data;
+  if (!auth) return next();
+
+  const tokenPayload = safeVerify(auth, z.object({ name: z.string() }));
+  if (!tokenPayload) return next();
+
+  const users = await load(
+    "users",
+    UserSchema.omit({ password: true }).array()
+  );
+  if (!users) return res.sendStatus(500);
+
+  const user = users.find((user) => user.name === tokenPayload.name);
+  if (!user) return next();
+
+  res.locals.user = user;
+  next();
+});
+
 server.post("/api/signup", async (req, res) => {
   const result = SignupRequestSchema.safeParse(req.body);
   if (!result.success) return res.sendStatus(500);
@@ -57,7 +95,6 @@ server.post("/api/signup", async (req, res) => {
   return res.json({ id });
 });
 
-//name -> id
 server.post("/api/login", async (req, res) => {
   const result = LoginSchema.safeParse(req.body);
   if (!result.success) return res.sendStatus(500);
@@ -73,14 +110,7 @@ server.post("/api/login", async (req, res) => {
   const isCorrect = await compare(password, user.password);
   if (!isCorrect) return res.sendStatus(500);
 
-  /* const toHash = name + serverPassword;
-
-  const signature =
-    hash(toHash) + "||||" + name
-
-  return res.json({ signature }); */
-
-  //token ami 10second utan lejar
+  //token ami 1h utan lejar
   const token = jwt.sign({ name: user.name }, serverPassword, {
     expiresIn: "1h",
   });
@@ -88,44 +118,20 @@ server.post("/api/login", async (req, res) => {
   res.json({ token });
 });
 
-const HeaderSchema = z.object({
-  auth: z.string(),
-});
-
 type Game = z.infer<typeof GameSchema>;
+type User = z.infer<typeof UserSchema>;
 
-//groupSize, id -> 200/400/500
 server.post("/api/game", async (req, res) => {
-  /* const signature = req.body.signature;
+  const user = res.locals.user as User;
+  if (!user) return res.sendStatus(401);
 
-  const name = signature.split("||||")[1];
-  const toHash = name + serverPassword;
-
-  const isCorrect = await compare(toHash, signature.split("||||")[0]);
-  if (!isCorrect) return res.sendStatus(401);
- */
-
-  const result = HeaderSchema.safeParse(req.headers);
-  if (!result.success) return res.sendStatus(401);
-  const { auth } = result.data;
-
-  let tokenPayload;
-  try {
-    tokenPayload = z
-      .object({ name: z.string() })
-      .parse(jwt.verify(auth, serverPassword));
-  } catch (error) {
-    return res.sendStatus(401);
-  }
-
-  /*  console.log(tokenPayload);
-  console.log("was here"); */
   const id = Math.random();
 
   const newGame: Game = {
     id,
-    admin: tokenPayload.name,
+    admin: user.name,
     requests: [],
+    joinedUsers: [],
     players: [],
     communityCards: [],
     usedCards: [],
@@ -144,10 +150,39 @@ server.post("/api/game", async (req, res) => {
   res.json({ id });
 });
 
-//id (user), id(game) -> 200/400/500
+const JoinRequestSchema = z.object({
+  id: z.number(),
+});
+
 server.post("/api/join", async (req, res) => {
-  //added to requests
-  res.json();
+  const user = res.locals.user as Omit<User, "password">;
+  if (!user) return res.sendStatus(401);
+
+  const result = JoinRequestSchema.safeParse(req.body);
+  if (!result.success) return res.sendStatus(400);
+  const { id } = req.body;
+
+  const games = await load("games", GameSchema.array());
+  if (!games) return res.sendStatus(500);
+
+  const gameToUpdate = games.find((game) => game.id === id);
+  if (!gameToUpdate) return res.sendStatus(404);
+
+  if (gameToUpdate.admin === user.name) {
+    gameToUpdate.joinedUsers.push(user);
+  } else {
+    gameToUpdate.requests.push(user);
+  }
+
+  const saveResult = await save(
+    "games",
+    games.map((game) => (game.id === id ? gameToUpdate : game)),
+    GameSchema.array()
+  );
+
+  if (!saveResult.success) return res.sendStatus(500);
+
+  res.json({ id });
 });
 
 //id (game) -> game(part of game)

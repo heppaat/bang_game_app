@@ -24,3 +24,11 @@ export const createGame = () =>
     schema: z.object({ id: z.number() }),
     payload: {},
   });
+
+export const joinGame = (id: number) =>
+  safeFetch({
+    method: "POST",
+    path: `/api/join`,
+    schema: z.object({ id: z.number() }),
+    payload: { id },
+  });

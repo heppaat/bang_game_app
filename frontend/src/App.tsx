@@ -1,14 +1,17 @@
 import { useState } from "react";
-import { signup, login, createGame } from "./api";
+import { signup, login, createGame, joinGame } from "./api";
 
 const App = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [createdGameId, setCreatedGameId] = useState<number | null>(null);
+  const [inputGameId, setInputGameId] = useState("");
+
   const [signupSuccess, setSignupSuccess] = useState<boolean | null>(null);
   const [loginSuccess, setLoginSuccess] = useState<boolean | null>(
     localStorage.getItem("token") ? true : null
   );
-  const [createdGameId, setCreatedGameId] = useState<number | null>(null);
+  const [joinError, setJoinError] = useState<boolean>(false);
 
   const handleSignup = async () => {
     const response = await signup(username, password);
@@ -41,6 +44,11 @@ const App = () => {
     if (createdGameId) {
       navigator.clipboard.writeText(createdGameId.toString());
     }
+  };
+
+  const handleJoin = async (id: number) => {
+    const response = await joinGame(id);
+    if (!response.success) return setJoinError(true);
   };
 
   return (
@@ -131,41 +139,55 @@ const App = () => {
                 <div>
                   <p className="text-center pb-2 font-bold">Game Created</p>
                   <p className="text-center pb-4">{createdGameId}</p>
-                  <button className="btn btn-accent" onClick={copy}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="1em"
-                      height="1em"
-                      viewBox="0 0 48 48"
-                    >
-                      <g
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-linejoin="round"
-                        stroke-width="4"
+                  <div className="flex justify-center items-center gap-2">
+                    <button className="btn btn-accent" onClick={copy}>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="1em"
+                        height="1em"
+                        viewBox="0 0 48 48"
                       >
-                        <path
-                          stroke-linecap="round"
-                          d="M13 12.432v-4.62A2.813 2.813 0 0 1 15.813 5h24.374A2.813 2.813 0 0 1 43 7.813v24.375A2.813 2.813 0 0 1 40.188 35h-4.672"
-                        />
-                        <path
-                          fill="currentColor"
-                          d="M32.188 13H7.811A2.813 2.813 0 0 0 5 15.813v24.374A2.813 2.813 0 0 0 7.813 43h24.375A2.813 2.813 0 0 0 35 40.188V15.811A2.813 2.813 0 0 0 32.188 13Z"
-                        />
-                      </g>
-                    </svg>
-                  </button>
+                        <g
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-linejoin="round"
+                          stroke-width="4"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            d="M13 12.432v-4.62A2.813 2.813 0 0 1 15.813 5h24.374A2.813 2.813 0 0 1 43 7.813v24.375A2.813 2.813 0 0 1 40.188 35h-4.672"
+                          />
+                          <path
+                            fill="currentColor"
+                            d="M32.188 13H7.811A2.813 2.813 0 0 0 5 15.813v24.374A2.813 2.813 0 0 0 7.813 43h24.375A2.813 2.813 0 0 0 35 40.188V15.811A2.813 2.813 0 0 0 32.188 13Z"
+                          />
+                        </g>
+                      </svg>
+                    </button>
 
-                  <button className="btn btn-neutral w-full">Join Game</button>
+                    <button
+                      onClick={() => handleJoin(createdGameId)}
+                      className="btn btn-neutral grow"
+                    >
+                      Join Game
+                    </button>
+                  </div>
                 </div>
               )}
               <div className="divider">Join Game</div>
               <input
+                value={inputGameId}
+                onChange={(e) => setInputGameId(e.target.value)}
                 className="input input-bordered"
                 placeholder="Game ID"
                 type="text"
               />
-              <button className="btn btn-neutral">Join</button>
+              <button
+                onClick={() => handleJoin(+inputGameId)}
+                className="btn btn-neutral"
+              >
+                Join
+              </button>
               <div className="divider">Account</div>
               <button onClick={handleLogout} className="btn btn-primary">
                 Logout
