@@ -71,7 +71,7 @@ server.post("/api/login", async (req, res) => {
   if (!user) return res.sendStatus(401);
 
   const isCorrect = await compare(password, user.password);
-  if (!isCorrect) res.sendStatus(500);
+  if (!isCorrect) return res.sendStatus(500);
 
   /* const toHash = name + serverPassword;
 
@@ -82,7 +82,7 @@ server.post("/api/login", async (req, res) => {
 
   //token ami 10second utan lejar
   const token = jwt.sign({ name: user.name }, serverPassword, {
-    expiresIn: "10s",
+    expiresIn: "1h",
   });
 
   res.json({ token });
@@ -91,6 +91,8 @@ server.post("/api/login", async (req, res) => {
 const HeaderSchema = z.object({
   auth: z.string(),
 });
+
+type Game = z.infer<typeof GameSchema>;
 
 //groupSize, id -> 200/400/500
 server.post("/api/game", async (req, res) => {
@@ -109,15 +111,37 @@ server.post("/api/game", async (req, res) => {
 
   let tokenPayload;
   try {
-    tokenPayload = jwt.verify(auth, serverPassword);
+    tokenPayload = z
+      .object({ name: z.string() })
+      .parse(jwt.verify(auth, serverPassword));
   } catch (error) {
     return res.sendStatus(401);
   }
 
-  console.log(tokenPayload);
-  console.log("was here");
+  /*  console.log(tokenPayload);
+  console.log("was here"); */
+  const id = Math.random();
 
-  res.json({ msg: "ok" });
+  const newGame: Game = {
+    id,
+    admin: tokenPayload.name,
+    requests: [],
+    players: [],
+    communityCards: [],
+    usedCards: [],
+    logs: [],
+    unusedCards: [],
+  };
+
+  const games = await load("games", GameSchema.array());
+  if (!games) return res.sendStatus(500);
+
+  games.push(newGame);
+
+  const saveResult = await save("games", games, GameSchema.array());
+  if (!saveResult.success) return res.sendStatus(500);
+
+  res.json({ id });
 });
 
 //id (user), id(game) -> 200/400/500

@@ -1,12 +1,7 @@
 [
   {
-    "id": 0.8292083596226569,
+    "id": 0.8116585581437432,
     "name": "alma",
-    "password": "$2b$10$J476pX261RSLnTMFVnk4Yu3S/QIPhU8QEiGMmZq17SD3ktzudsZZq"
-  },
-  {
-    "id": 0.0821826462349835,
-    "name": "korte",
-    "password": "$2b$10$pwTgjRFy05szaK98X9rk7u7NxgYIyTiviFTY8fT6GgEG8qTRqUlGG"
+    "password": "$2b$10$ugKaWQ9gENOy2CZrRDVmyesyV7MyKpfmGKdGCACcdsK4I/cLE5rPq"
   }
 ]

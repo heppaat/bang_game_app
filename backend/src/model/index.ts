@@ -54,8 +54,8 @@ export const LogSchema = z.object({
 });
 
 export const GameSchema = z.object({
-  id: z.string(),
-  admin: z.number(),
+  id: z.number(),
+  admin: z.string(),
   requests: UserSchema.array(),
   players: PlayerSchema.array(),
   unusedCards: CardSchema.array(),

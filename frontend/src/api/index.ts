@@ -21,6 +21,6 @@ export const createGame = () =>
   safeFetch({
     method: "POST",
     path: "/api/game",
-    schema: z.object({ msg: z.string() }),
+    schema: z.object({ id: z.number() }),
     payload: {},
   });
