@@ -50,6 +50,10 @@ const safeVerify = <Schema extends z.ZodTypeAny>(
   }
 };
 
+//minden egyes requestnel fusson le ez a kod
+//next meghivodik akkor ugrik a kovetkezo functionre amelyiket le kell futtatni
+//azt ertuk el ha tudjuk azonositani a header alapjan a usert, akkor raaggatjuk a response objectre a usert
+
 server.use(async (req, res, next) => {
   const result = HeaderSchema.safeParse(req.headers);
   if (!result.success) return next();
@@ -130,6 +134,7 @@ server.post("/api/game", async (req, res) => {
   const newGame: Game = {
     id,
     admin: user.name,
+    hasStarted: false,
     requests: [],
     joinedUsers: [],
     players: [],
@@ -168,6 +173,12 @@ server.post("/api/join", async (req, res) => {
   const gameToUpdate = games.find((game) => game.id === id);
   if (!gameToUpdate) return res.sendStatus(404);
 
+  if (
+    gameToUpdate.requests.find((player) => player.name === user.name) ||
+    gameToUpdate.joinedUsers.find((player) => player.name === user.name)
+  )
+    return res.json({ id });
+
   if (gameToUpdate.admin === user.name) {
     gameToUpdate.joinedUsers.push(user);
   } else {
@@ -185,9 +196,18 @@ server.post("/api/join", async (req, res) => {
   res.json({ id });
 });
 
-//id (game) -> game(part of game)
-server.get("/api/state/:id", async (req, res) => {
-  res.json();
+server.get("/api/game/:id", async (req, res) => {
+  const user = res.locals.user as Omit<User, "password">;
+  if (!user) return res.sendStatus(401);
+
+  const games = await load("games", GameSchema.array());
+  if (!games) return res.sendStatus(500);
+
+  const id = req.params.id;
+  const game = games.find((game) => game.id === +id);
+  if (!game) return res.sendStatus(404);
+
+  return res.json(game);
 });
 
 //id (user) id (game) -> 200/400/500

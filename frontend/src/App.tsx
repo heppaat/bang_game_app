@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { signup, login, createGame, joinGame } from "./api";
-import Game from "./components/Game";
+import GameComponent from "./components/GameComponent";
 
 const App = () => {
   const [username, setUsername] = useState("");
@@ -13,7 +13,7 @@ const App = () => {
     localStorage.getItem("token") ? true : null
   );
   const [joinError, setJoinError] = useState<boolean>(false);
-  const [inGame, setInGame] = useState<boolean>(false);
+  const [inGame, setInGame] = useState<number | null>(null);
 
   const handleSignup = async () => {
     const response = await signup(username, password);
@@ -54,7 +54,7 @@ const App = () => {
       setJoinError(true);
       return;
     } else {
-      setInGame(true);
+      setInGame(id);
     }
   };
 
@@ -222,7 +222,7 @@ const App = () => {
 
       {inGame && (
         <main className="flex flex-col items-center py-16">
-          <Game />
+          <GameComponent gameId={inGame} />
         </main>
       )}
     </>

@@ -1,5 +1,6 @@
 import { safeFetch } from "../lib/http";
 import { z } from "zod";
+import { GameSchema } from "../model";
 
 export const signup = (name: string, password: string) =>
   safeFetch({
@@ -31,4 +32,11 @@ export const joinGame = (id: number) =>
     path: `/api/join`,
     schema: z.object({ id: z.number() }),
     payload: { id },
+  });
+
+export const getGame = (id: number) =>
+  safeFetch({
+    method: "GET",
+    path: `/api/game/` + id,
+    schema: GameSchema,
   });
