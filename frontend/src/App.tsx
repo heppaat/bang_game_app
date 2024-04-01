@@ -3,6 +3,7 @@ import { signup, login, createGame, joinGame } from "./api";
 import GameComponent from "./components/GameComponent";
 
 const App = () => {
+  const [loggedInUsername, setLoggedInUsername] = useState<string | null>(null);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [createdGameId, setCreatedGameId] = useState<number | null>(null);
@@ -24,6 +25,7 @@ const App = () => {
     const response = await login(username, password);
     setLoginSuccess(response.success);
     if (response.success) {
+      setLoggedInUsername(username);
       setPassword("");
       setUsername("");
       localStorage.setItem("token", response.data.token);
@@ -222,7 +224,7 @@ const App = () => {
 
       {inGame && (
         <main className="flex flex-col items-center py-16">
-          <GameComponent gameId={inGame} />
+          <GameComponent gameId={inGame} loggedInUsername={loggedInUsername!} />
         </main>
       )}
     </>

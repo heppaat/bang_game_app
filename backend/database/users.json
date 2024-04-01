@@ -8,5 +8,15 @@
     "id": 0.7919465286962821,
     "name": "korte",
     "password": "$2b$10$oRwO4RXwQpWmGiiL5wMoe.qFYcTUYvmr/HUhr4Sua.CWMFPCeMk6e"
+  },
+  {
+    "id": 0.0060363159935710176,
+    "name": "barack",
+    "password": "$2b$10$sUIhw4H3rzifYc0U50LYeeiCkvHXZnfD0QnRWtTQlYulbeiIyfSmu"
+  },
+  {
+    "id": 0.41212092837028513,
+    "name": "malna",
+    "password": "$2b$10$1c5qjDdXw1aWygZtKZAPNeEZfr59VGZdlyaR7.DsF13txqXe8OoFu"
   }
 ]

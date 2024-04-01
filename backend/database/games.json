@@ -1,1 +1,23 @@
-[]
+[
+  {
+    "id": 0.013963577158804696,
+    "admin": "alma",
+    "hasStarted": false,
+    "requests": [],
+    "joinedUsers": [
+      {
+        "id": 0.8116585581437432,
+        "name": "alma"
+      },
+      {
+        "id": 0.0060363159935710176,
+        "name": "barack"
+      }
+    ],
+    "players": [],
+    "unusedCards": [],
+    "communityCards": [],
+    "usedCards": [],
+    "logs": []
+  }
+]

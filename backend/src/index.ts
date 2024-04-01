@@ -210,10 +210,83 @@ server.get("/api/game/:id", async (req, res) => {
   return res.json(game);
 });
 
-//id (user) id (game) -> 200/400/500
+const AuthorizeSchema = z.object({
+  gameId: z.number(),
+  userId: z.number(),
+});
+
 server.post("/api/authorize", async (req, res) => {
-  //from requests to player
-  res.json();
+  const user = res.locals.user as Omit<User, "password">;
+  if (!user) return res.sendStatus(401);
+
+  const result = AuthorizeSchema.safeParse(req.body);
+  if (!result.success) return res.sendStatus(400);
+
+  const games = await load("games", GameSchema.array());
+  if (!games) return res.sendStatus(500);
+
+  const id = result.data.gameId;
+  const gameToUpdate = games.find((game) => game.id === +id);
+  if (!gameToUpdate) return res.sendStatus(404);
+
+  if (gameToUpdate.admin !== user.name) return res.sendStatus(403);
+
+  const userId = result.data.userId;
+  const userToAuthorize = gameToUpdate.requests.find(
+    (player) => player.id === userId
+  );
+  if (!userToAuthorize) return res.sendStatus(400);
+
+  gameToUpdate.requests = gameToUpdate.requests.filter(
+    (player) => player.id !== userId
+  );
+  gameToUpdate.joinedUsers = [...gameToUpdate.joinedUsers, userToAuthorize];
+
+  const saveResult = await save(
+    "games",
+    games.map((game) => (game.id === id ? gameToUpdate : game)),
+    GameSchema.array()
+  );
+
+  if (!saveResult.success) return res.sendStatus(500);
+
+  res.json(saveResult);
+});
+
+server.delete("/api/game/:gameId/:username", async (req, res) => {
+  const user = res.locals.user as Omit<User, "password">;
+  if (!user) return res.sendStatus(401);
+
+  const games = await load("games", GameSchema.array());
+  if (!games) return res.sendStatus(500);
+
+  const id = req.params.gameId;
+  const gameToUpdate = games.find((game) => game.id === +id);
+  if (!gameToUpdate) return res.sendStatus(404);
+
+  const username = req.params.username;
+  const playerToDelete = gameToUpdate.joinedUsers.find(
+    (user) => user.name === username
+  );
+  if (!playerToDelete) return res.sendStatus(404);
+
+  const canDelete =
+    playerToDelete.name === user.name || gameToUpdate.admin === user.name;
+  if (!canDelete) return res.sendStatus(403);
+
+  gameToUpdate.joinedUsers = gameToUpdate.joinedUsers.filter(
+    (user) => user.name !== username
+  );
+
+  const saveResult = await save(
+    "games",
+    games.map((game) => (game.id === +id ? gameToUpdate : game)),
+    GameSchema.array()
+  );
+
+  if (!saveResult.success) return res.sendStatus(500);
+
+  res.json(saveResult);
 });
 
 //id (game) -> 200/400/500
