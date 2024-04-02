@@ -60,6 +60,10 @@ const App = () => {
     }
   };
 
+  const backToMain = () => {
+    setInGame(null);
+  };
+
   return (
     <>
       {!inGame && (
@@ -224,7 +228,11 @@ const App = () => {
 
       {inGame && (
         <main className="flex flex-col items-center py-16">
-          <GameComponent gameId={inGame} loggedInUsername={loggedInUsername!} />
+          <GameComponent
+            gameId={inGame}
+            loggedInUsername={loggedInUsername!}
+            backToMain={backToMain}
+          />
         </main>
       )}
     </>

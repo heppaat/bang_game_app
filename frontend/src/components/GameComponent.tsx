@@ -1,20 +1,28 @@
 import { authorize, getGame, deleteUserFromGame } from "../api";
 import { GameSchema } from "../model";
 import { z } from "zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Game = z.infer<typeof GameSchema>;
 
-const GameComponent = (props: { gameId: number; loggedInUsername: string }) => {
-  const { gameId, loggedInUsername } = props;
+const GameComponent = (props: {
+  gameId: number;
+  loggedInUsername: string;
+  backToMain: () => void;
+}) => {
+  const { gameId, loggedInUsername, backToMain } = props;
 
   const [game, setGame] = useState<Game | null>(null);
 
-  setInterval(async () => {
-    const response = await getGame(gameId);
-    if (!response.success) return;
-    setGame(response.data);
-  }, 1000);
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      const response = await getGame(gameId);
+      if (!response.success) return;
+      setGame(response.data);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [gameId]);
 
   const addPlayer = async (playerId: number) => {
     await authorize(gameId, playerId);
@@ -93,6 +101,10 @@ const GameComponent = (props: { gameId: number; loggedInUsername: string }) => {
               </div>
             ))}
           </div>
+          <div className="divider"></div>
+          <button onClick={backToMain} className="btn btn-error">
+            Back to main menu
+          </button>
         </div>
       )}
     </div>
