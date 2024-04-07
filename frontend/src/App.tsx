@@ -36,6 +36,7 @@ const App = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setLoginSuccess(null);
+    setCreatedGameId(null);
   };
 
   const handleCreate = async () => {
