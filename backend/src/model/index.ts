@@ -18,18 +18,15 @@ export const RoleSchema = z.object({
 
 export const CharacterSchema = z.object({
   name: z.string(),
-  url: z.string(),
+  imgUrl: z.string(),
   description: z.string(),
+  life: z.number(),
 });
 
 export const CardSchema = z.object({
-  isInstant: z.boolean(),
   title: z.string(),
   imgUrl: z.string().url(),
-  description: z.object({
-    text: z.string(),
-    imgUrl: z.string().url(),
-  }),
+  isInstant: z.boolean(),
   signature: z.object({
     number: z.string(),
     sign: z.string(),
@@ -37,13 +34,13 @@ export const CardSchema = z.object({
 });
 
 export const PlayerSchema = z.object({
-  userId: z.number(),
+  name: z.string(),
   role: RoleSchema,
   isRevealed: z.boolean(),
   character: CharacterSchema,
   life: z.number(),
-  inventoryCards: CardSchema.array(),
   cardsInHand: CardSchema.array(),
+  inventoryCards: CardSchema.array(),
   playedCards: CardSchema.array(),
   isActive: z.boolean(),
 });
