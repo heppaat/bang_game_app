@@ -117,16 +117,19 @@ const GameComponent = (props: {
       {game && game?.hasStarted && (
         <div className="flex gap-4 flex-wrap">
           {game.players.map((player) => (
-            <div className="card card-body bg-neutral text-neutral-content">
+            <div
+              key={player.name}
+              className="card card-body bg-neutral text-neutral-content"
+            >
               <p>{player.character.name}</p>
-              {(player.role.name === "Sheriff" ||
-                player.name === loggedInUsername) && <p>{player.role.name}</p>}
+              {player.role.name === "Sheriff" ||
+                (player.name === loggedInUsername && <p>{player.role.name}</p>)}
               {player.role.name !== "Sheriff" &&
                 player.name !== loggedInUsername && <p>*****</p>}
               <p>{player.life}</p>
               <div className="divider">Cards</div>
-              {player.cardsInHand.map((card) => (
-                <p>
+              {player.cardsInHand.map((card, index) => (
+                <p key={index}>
                   {player.name === loggedInUsername && (
                     <span>{card.title}</span>
                   )}
