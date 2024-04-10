@@ -55,3 +55,11 @@ export const deleteUserFromGame = (gameId: number, username: string) =>
     path: "/api/game/" + gameId + "/" + username,
     schema: z.object({ success: z.boolean() }),
   });
+
+export const startGame = (id: number) =>
+  safeFetch({
+    method: "POST",
+    path: "/api/start/" + id,
+    schema: z.object({ success: z.boolean() }),
+    payload: {},
+  });

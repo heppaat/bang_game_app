@@ -1,4 +1,4 @@
-import { authorize, getGame, deleteUserFromGame } from "../api";
+import { authorize, getGame, deleteUserFromGame, startGame } from "../api";
 import { GameSchema } from "../model";
 import { z } from "zod";
 import { useEffect, useState } from "react";
@@ -32,6 +32,10 @@ const GameComponent = (props: {
     await deleteUserFromGame(gameId, username);
   };
 
+  const initGame = async () => {
+    await startGame(gameId);
+  };
+
   return (
     <div>
       {!game && (
@@ -43,18 +47,20 @@ const GameComponent = (props: {
       {game && !game.hasStarted && (
         <div className="flex flex-col items-center py-16">
           <div className="card bg-secondary text-secondary-content w-[300px] pb-8">
-            {game.joinedUsers.length > 8 ||
+            {game.joinedUsers.length > 7 ||
               game.joinedUsers.length < 4 ||
               (loggedInUsername !== game.admin && (
                 <div className="flex justify-center my-8">
                   <div className="loading loading-spinner loading-lg"></div>
                 </div>
               ))}
-            {game.joinedUsers.length <= 8 &&
+            {game.joinedUsers.length <= 7 &&
               game.joinedUsers.length >= 4 &&
               loggedInUsername === game.admin && (
                 <div className="flex justify-center my-8">
-                  <button className="btn btn-primary">Start Game</button>
+                  <button onClick={initGame} className="btn btn-primary">
+                    Start Game
+                  </button>
                 </div>
               )}
             <div className="divider">Joined players</div>
@@ -105,6 +111,30 @@ const GameComponent = (props: {
           <button onClick={backToMain} className="btn btn-error">
             Back to main menu
           </button>
+        </div>
+      )}
+
+      {game && game?.hasStarted && (
+        <div className="flex gap-4 flex-wrap">
+          {game.players.map((player) => (
+            <div className="card card-body bg-neutral text-neutral-content">
+              <p>{player.character.name}</p>
+              {(player.role.name === "Sheriff" ||
+                player.name === loggedInUsername) && <p>{player.role.name}</p>}
+              {player.role.name !== "Sheriff" &&
+                player.name !== loggedInUsername && <p>*****</p>}
+              <p>{player.life}</p>
+              <div className="divider">Cards</div>
+              {player.cardsInHand.map((card) => (
+                <p>
+                  {player.name === loggedInUsername && (
+                    <span>{card.title}</span>
+                  )}
+                  {player.name !== loggedInUsername && <span>*****</span>}
+                </p>
+              ))}
+            </div>
+          ))}
         </div>
       )}
     </div>
