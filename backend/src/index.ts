@@ -274,21 +274,22 @@ server.delete("/api/game/:gameId/:username", async (req, res) => {
 
   const canDelete =
     playerToDelete.name === user.name || gameToUpdate.admin === user.name;
-  if (!canDelete) return res.sendStatus(403);
+  if (!canDelete) res.sendStatus(403);
+  else {
+    gameToUpdate.joinedUsers = gameToUpdate.joinedUsers.filter(
+      (user) => user.name !== username
+    );
 
-  gameToUpdate.joinedUsers = gameToUpdate.joinedUsers.filter(
-    (user) => user.name !== username
-  );
+    const saveResult = await save(
+      "games",
+      games.map((game) => (game.id === +id ? gameToUpdate : game)),
+      GameSchema.array()
+    );
 
-  const saveResult = await save(
-    "games",
-    games.map((game) => (game.id === +id ? gameToUpdate : game)),
-    GameSchema.array()
-  );
+    if (!saveResult.success) return res.sendStatus(500);
 
-  if (!saveResult.success) return res.sendStatus(500);
-
-  res.json(saveResult);
+    res.json(saveResult);
+  }
 });
 
 server.post("/api/start/:gameId", async (req, res) => {
